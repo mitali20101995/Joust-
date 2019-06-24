@@ -23,6 +23,7 @@ public class Enemy
     public void setYPosition(int y) {
         this.yPosition = y;
     }
+
     public int getXPosition() {
         return this.xPosition;
     }

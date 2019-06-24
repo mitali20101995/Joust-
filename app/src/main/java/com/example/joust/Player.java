@@ -13,9 +13,11 @@ public class Player
 
 
             public Player(Context context, int x, int y) {
-                this.playerImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.skunk_walk_01);
+                this.playerImage = BitmapFactory.decodeResource(context.getResources(), R.drawable.skunk_walk);
                 this.xPosition = x;
                 this.yPosition = y;
+                //this.playerImage.setWidth(width);
+                //this.playerImage.setHeight(height);
             }
 
             public void setXPosition(int x) {

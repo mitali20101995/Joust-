@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
 import java.util.Random;
 
 public class GameEngine extends SurfaceView implements Runnable {
@@ -83,19 +82,20 @@ public class GameEngine extends SurfaceView implements Runnable {
 
         // @TODO: Any other game setup stuff goes here
         this.setupBackground();
-
-
         this.spawnEnemyShips();
         this.spwanPlayer();
+
 
     }
 
     private void spwanPlayer() {
-        player = new Player(this.getContext(), 100, 100);
+        player = new Player(this.getContext(),100,1300);
+       // player.playerImage.setHeight(20);
+       // player.playerImage.setWidth(20);
 
     }
     private void spawnEnemyShips() {
-        enemy = new Enemy(this.getContext(), 1400, 100);
+        enemy = new Enemy(this.getContext(), 400, 100);
 
     }
 
@@ -123,7 +123,7 @@ public class GameEngine extends SurfaceView implements Runnable {
     // ------------------------------
     @Override
     public void run() {
-        while (gameIsRunning == true) {
+        while (gameIsRunning) {
             this.updatePositions();
             this.redrawSprites();
             this.setFPS();
@@ -174,11 +174,13 @@ public class GameEngine extends SurfaceView implements Runnable {
 
 
             //@TODO: Draw the sprites (rectangle, circle, etc)
-            //@TODO: Draw the bacgkround
-            canvas.drawBitmap(this.background, this.bgX, 0, null);
+            //@TODO: Draw the background
+            canvas.drawBitmap(this.background, this.bgX , 0, null);
 
             //@TODO: Draw the player
+
             canvas.drawBitmap(this.player.getBitmap(), this.player.getXPosition(), this.player.getYPosition(), paintbrush);
+
             //@TODO: Draw the enemy
             canvas.drawBitmap(this.enemy.getBitmap(), this.enemy.getXPosition(), this.enemy.getYPosition(), paintbrush);
 
