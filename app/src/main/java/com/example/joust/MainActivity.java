@@ -5,9 +5,14 @@ import android.os.Bundle;
 
 import android.graphics.Point;
 import android.view.Display;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
     GameEngine pongGame;
+    GestureDetector detector;
+    View.OnTouchListener listener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +29,15 @@ public class MainActivity extends AppCompatActivity {
 
         // Make GameEngine the view of the Activity
         setContentView(pongGame);
+
+        detector = new GestureDetector(this, new GameGestureDetector());
+        listener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return detector.onTouchEvent(event);
+            }
+        };
+        pongGame.setOnTouchListener(listener);
 
     }
 
