@@ -1,18 +1,18 @@
 package com.example.joust;
 
 import android.content.Context;
+import android.gesture.Gesture;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
-import android.support.constraint.solver.widgets.Rectangle;
+import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import java.util.Random;
 
 public class GameEngine extends SurfaceView implements Runnable {
     // -----------------------------------
@@ -21,6 +21,8 @@ public class GameEngine extends SurfaceView implements Runnable {
 
     // Android debug variables
     final static String TAG="JOUST-GAME";
+    int MIN_DISTANCE = 150;
+    int VELOCITY_THRESHOLD = 75;
 
     // -----------------------------------
     // ## SCREEN & DRAWING SETUP VARIABLES
@@ -42,13 +44,8 @@ public class GameEngine extends SurfaceView implements Runnable {
     Canvas canvas;
     Paint paintbrush;
 
-
-
-    // -----------------------------------
-    // ## GAME SPECIFIC VARIABLES
-    // -----------------------------------
-
-    // ----------------------------
+    GestureDetectorCompat detector;
+       // ----------------------------
     // ## SPRITES
     // ----------------------------
     Bitmap background;
@@ -59,7 +56,15 @@ public class GameEngine extends SurfaceView implements Runnable {
     // ----------------------------
     // ## GAME STATS - number of lives, score, etc
     // ----------------------------
-
+    static int speedUpDown = 550;
+    static int speedRightLeft = 250;
+    enum Gesture {
+        NONE,
+        SWIPE_UP,
+        SWIPE_DOWN,
+        SWIPE_RIGHT,
+        SWIPE_LEFT
+    }
 
     public GameEngine(Context context, int w, int h) {
         super(context);
@@ -67,6 +72,42 @@ public class GameEngine extends SurfaceView implements Runnable {
 
         this.holder = this.getHolder();
         this.paintbrush = new Paint();
+
+        this.detector = new GestureDetectorCompat(context, new GestureDetector.SimpleOnGestureListener() {
+            private static final String DEBUG_TAG = "Gestures";
+
+            @Override
+            public boolean onDown(MotionEvent event) {
+                Log.d(DEBUG_TAG,"onDown: " + event.toString());
+                return true;
+            }
+
+
+            @Override
+            public boolean onFling(MotionEvent event1, MotionEvent event2,
+                                   float velocityX, float velocityY) {
+                Log.d(DEBUG_TAG, "onFling: " + event1.toString() + event2.toString());
+
+                if (event1.getX() - event2.getX() > MIN_DISTANCE && Math.abs(velocityX) > VELOCITY_THRESHOLD) {
+                    // right to left swipe
+                    updatePositions(Gesture.SWIPE_LEFT);
+                    Log.d(TAG, "Swipe right to left");
+                } else if (event2.getX() - event1.getX() > MIN_DISTANCE && Math.abs(velocityX) > VELOCITY_THRESHOLD) {
+                    // left to right swipe
+                    updatePositions(Gesture.SWIPE_RIGHT);
+                    Log.d(TAG, "Swipe left to right");
+                } else if (event1.getY() - event2.getY() > MIN_DISTANCE && Math.abs(velocityY) > VELOCITY_THRESHOLD) {
+                    // bottom to top
+                    updatePositions(Gesture.SWIPE_UP);
+                    Log.d(TAG, "Swipe bottom to top");
+                } else if (event2.getY() - event1.getY() > MIN_DISTANCE && Math.abs(velocityY) > VELOCITY_THRESHOLD) {
+                    // top to bottom
+                    updatePositions(Gesture.SWIPE_DOWN);
+                    Log.d(TAG, "Swipe top to bottom");
+                }
+                return true;
+            }
+        });
 
         this.screenWidth = w;
         this.screenHeight = h;
@@ -124,7 +165,7 @@ public class GameEngine extends SurfaceView implements Runnable {
     @Override
     public void run() {
         while (gameIsRunning) {
-            this.updatePositions();
+            this.updatePositions(Gesture.NONE);
             this.redrawSprites();
             this.setFPS();
         }
@@ -153,9 +194,30 @@ public class GameEngine extends SurfaceView implements Runnable {
     // ------------------------------
 
     // 1. Tell Android the (x,y) positions of your sprites
-    public void updatePositions() {
+    public void updatePositions(Gesture gesture) {
         // @TODO: Update the position of the sprites
+        int playerY = player.getYPosition();
+        int playerX = player.getXPosition();
+        switch (gesture){
 
+            case SWIPE_UP:
+                playerY = playerY - speedUpDown;
+                player.setYPosition(playerY);
+                break;
+
+            case SWIPE_DOWN: playerY = playerY + speedUpDown;
+                player.setYPosition(playerY);
+                break;
+
+            case SWIPE_RIGHT: playerX = playerX + speedRightLeft;
+                player.setXPosition(playerX);
+                break;
+            case SWIPE_LEFT: playerX = playerX - speedRightLeft;
+                player.setXPosition(playerX);
+                break;
+            default:
+                break;
+        }
         // @TODO: Collision detection code
 
     }
@@ -197,7 +259,7 @@ public class GameEngine extends SurfaceView implements Runnable {
     // Sets the frame rate of the game
     public void setFPS() {
         try {
-            gameThread.sleep(50);
+            Thread.sleep(50);
         }
         catch (Exception e) {
 
@@ -207,17 +269,9 @@ public class GameEngine extends SurfaceView implements Runnable {
     // ------------------------------
     // USER INPUT FUNCTIONS
     // ------------------------------
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int userAction = event.getActionMasked();
-        //@TODO: What should happen when person touches the screen?
-        if (userAction == MotionEvent.ACTION_DOWN) {
-            // user pushed down on screen
-        }
-        else if (userAction == MotionEvent.ACTION_UP) {
-            // user lifted their finger
-        }
-        return true;
+        super.onTouchEvent(event);
+        return this.detector.onTouchEvent(event);
     }
 }

@@ -8,15 +8,10 @@ import static com.example.joust.GameEngine.TAG;
 
 public class GameGestureDetector extends GestureDetector.SimpleOnGestureListener {
     int MIN_DISTANCE = 150;
-    int OFF_PATH = 100;
     int VELOCITY_THRESHOLD = 75;
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         Log.d(TAG, "onFling");
-
-        Log.d(TAG, "Math.abs(e1.getX() - e2.getX())" + Math.abs(e1.getX() - e2.getX()));
-        Log.d(TAG, "Math.abs(e1.getY() - e2.getY())" + Math.abs(e1.getY() - e2.getY()));
-
 
         if (e1.getX() - e2.getX() > MIN_DISTANCE && Math.abs(velocityX) > VELOCITY_THRESHOLD) {
             // right to left swipe
