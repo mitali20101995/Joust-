@@ -1,12 +1,12 @@
 package com.example.joust;
 
 import android.content.Context;
-import android.gesture.Gesture;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -56,8 +56,13 @@ public class GameEngine extends SurfaceView implements Runnable {
     // ----------------------------
     // ## GAME STATS - number of lives, score, etc
     // ----------------------------
-    static int speedUpDown = 550;
-    static int speedRightLeft = 250;
+    static int RELOCATE_UP_DOWN = 400;
+    static int RELOCATE_RIGHT_LEFT = 200;
+
+    static int LEFT_RELOCATION_MAX = 0;
+    static int RIGHT_RELOCATION_MAX = 700;
+    static int UP_RELOCATION_MAX = 100;
+    static int DOWN_RELOCATION_MAX = 1300;
     enum Gesture {
         NONE,
         SWIPE_UP,
@@ -92,18 +97,22 @@ public class GameEngine extends SurfaceView implements Runnable {
                     // right to left swipe
                     updatePositions(Gesture.SWIPE_LEFT);
                     Log.d(TAG, "Swipe right to left");
+                    Log.d(TAG, "position:" + player.getXPosition() + "," + player.getYPosition());
                 } else if (event2.getX() - event1.getX() > MIN_DISTANCE && Math.abs(velocityX) > VELOCITY_THRESHOLD) {
                     // left to right swipe
                     updatePositions(Gesture.SWIPE_RIGHT);
                     Log.d(TAG, "Swipe left to right");
+                    Log.d(TAG, "position:" + player.getXPosition() + "," + player.getYPosition());
                 } else if (event1.getY() - event2.getY() > MIN_DISTANCE && Math.abs(velocityY) > VELOCITY_THRESHOLD) {
                     // bottom to top
                     updatePositions(Gesture.SWIPE_UP);
                     Log.d(TAG, "Swipe bottom to top");
+                    Log.d(TAG, "position:" + player.getXPosition() + "," + player.getYPosition());
                 } else if (event2.getY() - event1.getY() > MIN_DISTANCE && Math.abs(velocityY) > VELOCITY_THRESHOLD) {
                     // top to bottom
                     updatePositions(Gesture.SWIPE_DOWN);
                     Log.d(TAG, "Swipe top to bottom");
+                    Log.d(TAG, "position:" + player.getXPosition() + "," + player.getYPosition());
                 }
                 return true;
             }
@@ -131,8 +140,6 @@ public class GameEngine extends SurfaceView implements Runnable {
 
     private void spwanPlayer() {
         player = new Player(this.getContext(),100,1300);
-       // player.playerImage.setHeight(20);
-       // player.playerImage.setWidth(20);
 
     }
     private void spawnEnemyShips() {
@@ -196,24 +203,22 @@ public class GameEngine extends SurfaceView implements Runnable {
     // 1. Tell Android the (x,y) positions of your sprites
     public void updatePositions(Gesture gesture) {
         // @TODO: Update the position of the sprites
-        int playerY = player.getYPosition();
-        int playerX = player.getXPosition();
+
         switch (gesture){
 
             case SWIPE_UP:
-                playerY = playerY - speedUpDown;
-                player.setYPosition(playerY);
+                player.updatePlayerPosition(Player.Direction.UP, RELOCATE_UP_DOWN);
+            break;
+
+            case SWIPE_DOWN:
+                player.updatePlayerPosition(Player.Direction.DOWN, RELOCATE_UP_DOWN);
                 break;
 
-            case SWIPE_DOWN: playerY = playerY + speedUpDown;
-                player.setYPosition(playerY);
+            case SWIPE_RIGHT:
+                player.updatePlayerPosition(Player.Direction.RIGHT, RELOCATE_RIGHT_LEFT);
                 break;
-
-            case SWIPE_RIGHT: playerX = playerX + speedRightLeft;
-                player.setXPosition(playerX);
-                break;
-            case SWIPE_LEFT: playerX = playerX - speedRightLeft;
-                player.setXPosition(playerX);
+            case SWIPE_LEFT:
+                player.updatePlayerPosition(Player.Direction.LEFT, RELOCATE_RIGHT_LEFT);
                 break;
             default:
                 break;
@@ -242,6 +247,17 @@ public class GameEngine extends SurfaceView implements Runnable {
             //@TODO: Draw the player
 
             canvas.drawBitmap(this.player.getBitmap(), this.player.getXPosition(), this.player.getYPosition(), paintbrush);
+
+            paintbrush.setColor(Color.BLUE);
+            paintbrush.setStyle(Paint.Style.STROKE);
+            paintbrush.setStrokeWidth(5);
+
+            Rect playerHitbox = player.getHitbox();
+            canvas.drawRect( playerHitbox.left,
+                    playerHitbox.top,
+                    playerHitbox.right,
+                    playerHitbox.bottom,
+                    paintbrush);
 
             //@TODO: Draw the enemy
             canvas.drawBitmap(this.enemy.getBitmap(), this.enemy.getXPosition(), this.enemy.getYPosition(), paintbrush);
