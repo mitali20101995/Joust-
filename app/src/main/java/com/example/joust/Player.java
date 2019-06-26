@@ -99,9 +99,19 @@ public class Player {
             default:
                 break;
         }
+        updateHitBoxPosition();
+    }
+
+    private void updateHitBoxPosition() {
         this.hitBox.left = this.xPosition;
         this.hitBox.top = this.yPosition;
         this.hitBox.right = this.xPosition + this.playerImage.getWidth();
         this.hitBox.bottom = this.yPosition + this.playerImage.getHeight();
+    }
+
+    public void updatePlayerPosition(int xPosition, int yPosition){
+        this.setXPosition(xPosition);
+        this.setYPosition(yPosition);
+        updateHitBoxPosition();
     }
 }

@@ -12,6 +12,7 @@ public class Enemy
     private int yPosition;
     private Bitmap image;
     private Rect hitBox;
+    private Direction currentDirection;
 
     enum Direction {
         NONE,
@@ -19,10 +20,11 @@ public class Enemy
         LEFT
     }
 
-    public Enemy(Context context, int x, int y) {
+    public Enemy(Context context, int x, int y, Direction initialDirection) {
         this.image = BitmapFactory.decodeResource(context.getResources(), R.drawable.snake_crawl_01);
         this.xPosition = x;
         this.yPosition = y;
+        this.currentDirection = initialDirection;
 
         this.hitBox = new Rect(
                 this.xPosition,
@@ -52,6 +54,12 @@ public class Enemy
 
     public Rect getHitBox() { return this.hitBox; }
 
+    public Direction getCurrentDirection() { return this.currentDirection; }
+    public void setCurrentDirection(Direction currentDirection)
+    {
+        this.currentDirection = currentDirection;
+    }
+
     public void updatePosition(Direction direction, int steps) {
         int newPositionX = this.xPosition;
         switch (direction){
@@ -69,5 +77,4 @@ public class Enemy
         this.hitBox.left = this.xPosition;
         this.hitBox.right = this.xPosition + this.image.getWidth();
     }
-
 }

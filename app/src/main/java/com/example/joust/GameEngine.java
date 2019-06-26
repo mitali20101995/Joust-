@@ -7,12 +7,16 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Shader;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 public class GameEngine extends SurfaceView implements Runnable {
     // -----------------------------------
@@ -52,12 +56,17 @@ public class GameEngine extends SurfaceView implements Runnable {
     int bgX;            // x-coordinate of the top-left corner of the background
 
     Player player;
-    Enemy enemy;
+    Enemy[] enemies;
+
+    Random r;
     // ----------------------------
     // ## GAME STATS - number of lives, score, etc
     // ----------------------------
+
+    int lives;
     static int RELOCATE_UP_DOWN = 400;
-    static int RELOCATE_RIGHT_LEFT = 200;
+    static int RELOCATE_RIGHT_LEFT_ENEMY = 25;
+    static int RELOCATE_RIGHT_LEFT_PLAYER = 150;
 
     static int LEFT_RELOCATION_MAX = 0;
     static int RIGHT_RELOCATION_MAX = 700;
@@ -70,10 +79,11 @@ public class GameEngine extends SurfaceView implements Runnable {
         SWIPE_RIGHT,
         SWIPE_LEFT
     }
-    Enemy.Direction enemyDirection;
 
     public GameEngine(Context context, int w, int h) {
         super(context);
+
+        r = new Random();
 
 
         this.holder = this.getHolder();
@@ -129,7 +139,7 @@ public class GameEngine extends SurfaceView implements Runnable {
         // This is optional. Use it to:
         //  - setup or configure your sprites
         //  - set the initial position of your sprites
-        enemyDirection = Enemy.Direction.RIGHT;
+        lives = 4;
 
 
         // @TODO: Any other game setup stuff goes here
@@ -145,8 +155,12 @@ public class GameEngine extends SurfaceView implements Runnable {
 
     }
     private void spawnEnemyShips() {
-        enemy = new Enemy(this.getContext(), 400, 100);
-
+        enemies = new Enemy[]{
+                new Enemy(this.getContext(), 400, 100, r.nextBoolean()?  Enemy.Direction.LEFT: Enemy.Direction.RIGHT),
+                new Enemy(this.getContext(), 100, 500, r.nextBoolean()?  Enemy.Direction.LEFT: Enemy.Direction.RIGHT),
+                new Enemy(this.getContext(), 300, 900, r.nextBoolean()?  Enemy.Direction.LEFT: Enemy.Direction.RIGHT),
+                //new Enemy(this.getContext(), 250, 1300, r.nextBoolean()?  Enemy.Direction.LEFT: Enemy.Direction.RIGHT)
+        };
     }
 
     private void setupBackground() {
@@ -217,24 +231,42 @@ public class GameEngine extends SurfaceView implements Runnable {
                 break;
 
             case SWIPE_RIGHT:
-                player.updatePlayerPosition(Player.Direction.RIGHT, RELOCATE_RIGHT_LEFT);
+                player.updatePlayerPosition(Player.Direction.RIGHT, RELOCATE_RIGHT_LEFT_PLAYER);
                 break;
             case SWIPE_LEFT:
-                player.updatePlayerPosition(Player.Direction.LEFT, RELOCATE_RIGHT_LEFT);
+                player.updatePlayerPosition(Player.Direction.LEFT, RELOCATE_RIGHT_LEFT_PLAYER);
                 break;
             default:
                 break;
         }
 
-        if(enemy.getXPosition() <= LEFT_RELOCATION_MAX){
-            enemyDirection = Enemy.Direction.RIGHT;
+        for (Enemy enemy : enemies) {
+            if(enemy.getXPosition() <= LEFT_RELOCATION_MAX){
+                enemy.setCurrentDirection(Enemy.Direction.RIGHT);
+            }
+            else if(enemy.getXPosition() >= RIGHT_RELOCATION_MAX){
+                enemy.setCurrentDirection(Enemy.Direction.LEFT);
+            }
+            enemy.updatePosition(enemy.getCurrentDirection(), RELOCATE_RIGHT_LEFT_ENEMY);
         }
-        else if(enemy.getXPosition() >= RIGHT_RELOCATION_MAX){
-            enemyDirection = Enemy.Direction.LEFT;
 
+        // @TODO: Collision detection
+        for(Enemy enemy: enemies){
+            if (player.getHitbox().intersect(enemy.getHitBox())) {
+
+                // reduce lives
+                lives--;
+
+                if(lives == 0){
+                    pauseGame();
+                }
+                // reset player to original position
+                player.updatePlayerPosition(100,1300);
+            }
         }
-        enemy.updatePosition(enemyDirection, RELOCATE_RIGHT_LEFT);
-        // @TODO: Collision detection code
+
+
+
 
     }
 
@@ -270,20 +302,23 @@ public class GameEngine extends SurfaceView implements Runnable {
                     playerHitbox.bottom,
                     paintbrush);
 
-            Rect enemyHitbox = enemy.getHitBox();
-            canvas.drawRect( enemyHitbox.left,
-                    enemyHitbox.top,
-                    enemyHitbox.right,
-                    enemyHitbox.bottom,
-                    paintbrush);
+            for (Enemy enemy: enemies) {
+                Rect enemyHitbox = enemy.getHitBox();
+                canvas.drawRect( enemyHitbox.left,
+                        enemyHitbox.top,
+                        enemyHitbox.right,
+                        enemyHitbox.bottom,
+                        paintbrush);
 
-            //@TODO: Draw the enemy
-            canvas.drawBitmap(this.enemy.getBitmap(), this.enemy.getXPosition(), this.enemy.getYPosition(), paintbrush);
+                //@TODO: Draw the enemy
+                canvas.drawBitmap(enemy.getBitmap(), enemy.getXPosition(), enemy.getYPosition(), paintbrush);
+            }
 
 
             //@TODO: Draw game statistics (lives, score, etc)
             paintbrush.setTextSize(60);
-            canvas.drawText("Score: 25", 20, 100, paintbrush);
+            paintbrush.setColor(Color.BLACK);
+            canvas.drawText("Lives: " + lives, 20, 100, paintbrush);
 
             //----------------
             this.holder.unlockCanvasAndPost(canvas);
@@ -293,7 +328,7 @@ public class GameEngine extends SurfaceView implements Runnable {
     // Sets the frame rate of the game
     public void setFPS() {
         try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
         }
         catch (Exception e) {
 
