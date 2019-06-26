@@ -7,7 +7,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.Shader;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -56,7 +55,7 @@ public class GameEngine extends SurfaceView implements Runnable {
     int bgX;            // x-coordinate of the top-left corner of the background
 
     Player player;
-    Enemy[] enemies;
+    ArrayList<Enemy> enemies;
 
     Random r;
     // ----------------------------
@@ -64,6 +63,7 @@ public class GameEngine extends SurfaceView implements Runnable {
     // ----------------------------
 
     int lives;
+    int scores;
     static int RELOCATE_UP_DOWN = 400;
     static int RELOCATE_RIGHT_LEFT_ENEMY = 25;
     static int RELOCATE_RIGHT_LEFT_PLAYER = 150;
@@ -140,6 +140,7 @@ public class GameEngine extends SurfaceView implements Runnable {
         //  - setup or configure your sprites
         //  - set the initial position of your sprites
         lives = 4;
+        scores = 0;
 
 
         // @TODO: Any other game setup stuff goes here
@@ -155,12 +156,11 @@ public class GameEngine extends SurfaceView implements Runnable {
 
     }
     private void spawnEnemyShips() {
-        enemies = new Enemy[]{
-                new Enemy(this.getContext(), 400, 100, r.nextBoolean()?  Enemy.Direction.LEFT: Enemy.Direction.RIGHT),
-                new Enemy(this.getContext(), 100, 500, r.nextBoolean()?  Enemy.Direction.LEFT: Enemy.Direction.RIGHT),
-                new Enemy(this.getContext(), 300, 900, r.nextBoolean()?  Enemy.Direction.LEFT: Enemy.Direction.RIGHT),
-                //new Enemy(this.getContext(), 250, 1300, r.nextBoolean()?  Enemy.Direction.LEFT: Enemy.Direction.RIGHT)
-        };
+        enemies = new ArrayList<>();
+        enemies.add(new Enemy(this.getContext(), 400, 100, r.nextBoolean()?  Enemy.Direction.LEFT: Enemy.Direction.RIGHT));
+        enemies.add(new Enemy(this.getContext(), 100, 500, r.nextBoolean()?  Enemy.Direction.LEFT: Enemy.Direction.RIGHT));
+        enemies.add(new Enemy(this.getContext(), 300, 900, r.nextBoolean()?  Enemy.Direction.LEFT: Enemy.Direction.RIGHT));
+        enemies.add(new Enemy(this.getContext(), 500, 1300, r.nextBoolean()?  Enemy.Direction.LEFT: Enemy.Direction.RIGHT));
     }
 
     private void setupBackground() {
@@ -220,6 +220,8 @@ public class GameEngine extends SurfaceView implements Runnable {
     public void updatePositions(Gesture gesture) {
         // @TODO: Update the position of the sprites
 
+        int oldPositionY = player.getYPosition();
+
         switch (gesture){
 
             case SWIPE_UP:
@@ -252,16 +254,29 @@ public class GameEngine extends SurfaceView implements Runnable {
 
         // @TODO: Collision detection
         for(Enemy enemy: enemies){
-            if (player.getHitbox().intersect(enemy.getHitBox())) {
+            Rect hitBoxA = player.getHitbox();
+            Rect hitBoxB = enemy.getHitBox();
 
-                // reduce lives
-                lives--;
-
-                if(lives == 0){
-                    pauseGame();
+            if (player.getHitbox().intersect(enemy.getHitBox()) && enemy.getTouchTime() != 2) {
+                Log.d("Collision", "hitBoxA.bottom, hitBoxB.top:" + hitBoxA.bottom + ", "+ hitBoxB.top);
+                if(enemy.getTouchTime() == 1){
+                    enemies.remove(enemy);
                 }
-                // reset player to original position
-                player.updatePlayerPosition(100,1300);
+                else if(oldPositionY < player.getYPosition()){
+                    Log.d("Collision", "Player hits enemy");
+                    scores += 10;
+                    enemy.setTouchTime(1);
+                    enemy.kill();
+                }
+                else{
+                    Log.d("Collision", "Enemy hits player");
+                    lives--;
+                    if(lives == 0){
+                        pauseGame();
+                    }
+                    // reset player to original position
+                    player.updatePlayerPosition(100,1300);
+                }
             }
         }
 

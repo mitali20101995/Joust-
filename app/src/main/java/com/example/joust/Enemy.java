@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
+import android.os.CountDownTimer;
 
 
 public class Enemy
@@ -13,6 +14,8 @@ public class Enemy
     private Bitmap image;
     private Rect hitBox;
     private Direction currentDirection;
+    private Context context;
+    private int touchTime;
 
     enum Direction {
         NONE,
@@ -21,7 +24,9 @@ public class Enemy
     }
 
     public Enemy(Context context, int x, int y, Direction initialDirection) {
-        this.image = BitmapFactory.decodeResource(context.getResources(), R.drawable.snake_crawl_01);
+        this.touchTime = 0;
+        this.context = context;
+        this.image = BitmapFactory.decodeResource(this.context.getResources(), R.drawable.snake_crawl_01);
         this.xPosition = x;
         this.yPosition = y;
         this.currentDirection = initialDirection;
@@ -52,7 +57,22 @@ public class Enemy
         return this.image;
     }
 
+    public void kill() {
+        image = BitmapFactory.decodeResource(context.getResources(), R.drawable.egg);
+        new CountDownTimer(1000, 1000) {
+            public void onTick(long millisUntilFinished) {
+            }
+            public void onFinish() {
+                image = BitmapFactory.decodeResource(context.getResources(), R.drawable.snake_crawl_01);
+            }
+        }.start();
+    }
+
+    public int getTouchTime(){ return this.touchTime; }
+    public void setTouchTime(int touchTime){ this.touchTime = touchTime; }
+
     public Rect getHitBox() { return this.hitBox; }
+    public int getWidth() { return this.image.getWidth(); }
 
     public Direction getCurrentDirection() { return this.currentDirection; }
     public void setCurrentDirection(Direction currentDirection)

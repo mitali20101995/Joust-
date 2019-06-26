@@ -60,6 +60,7 @@ public class Player {
     public Rect getHitbox() {
         return this.hitBox;
     }
+    public int getWidth() { return this.playerImage.getWidth(); }
 
     public void updatePlayerPosition(Direction direction, int steps) {
         int newPositionX = this.xPosition;
