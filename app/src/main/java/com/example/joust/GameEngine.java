@@ -257,22 +257,26 @@ public class GameEngine extends SurfaceView implements Runnable {
             Rect hitBoxA = player.getHitbox();
             Rect hitBoxB = enemy.getHitBox();
 
-            if (player.getHitbox().intersect(enemy.getHitBox()) && enemy.getTouchTime() != 2) {
+            if (player.getHitbox().intersect(enemy.getHitBox()) ) {
                 Log.d("Collision", "hitBoxA.bottom, hitBoxB.top:" + hitBoxA.bottom + ", "+ hitBoxB.top);
-                if(enemy.getTouchTime() == 1){
-                    enemies.remove(enemy);
-                }
-                else if(oldPositionY < player.getYPosition()){
+                if(oldPositionY < player.getYPosition()){
                     Log.d("Collision", "Player hits enemy");
                     scores += 10;
-                    enemy.setTouchTime(1);
-                    enemy.kill();
+                    enemies.remove(enemy);
+                   // enemy.kill();
+//                    if(enemy.getTouchTime() == 1){
+//                        enemies.remove(enemy);
+//                    }
+//                    else{
+//                        enemy.setTouchTime(1);
+//
+//                    }
                 }
                 else{
                     Log.d("Collision", "Enemy hits player");
                     lives--;
                     if(lives == 0){
-                        pauseGame();
+                       // pauseGame();
                     }
                     // reset player to original position
                     player.updatePlayerPosition(100,1300);
@@ -334,6 +338,7 @@ public class GameEngine extends SurfaceView implements Runnable {
             paintbrush.setTextSize(60);
             paintbrush.setColor(Color.BLACK);
             canvas.drawText("Lives: " + lives, 20, 100, paintbrush);
+            canvas.drawText("Score: " + scores, 800, 100, paintbrush);
 
             //----------------
             this.holder.unlockCanvasAndPost(canvas);

@@ -42,9 +42,7 @@ public class Enemy
     public void setXPosition(int x) {
         this.xPosition = x;
     }
-    public void setYPosition(int y) {
-        this.yPosition = y;
-    }
+    public void setYPosition(int y) { this.yPosition = y; }
 
     public int getXPosition() {
         return this.xPosition;
@@ -74,7 +72,9 @@ public class Enemy
     public Rect getHitBox() { return this.hitBox; }
     public int getWidth() { return this.image.getWidth(); }
 
+
     public Direction getCurrentDirection() { return this.currentDirection; }
+
     public void setCurrentDirection(Direction currentDirection)
     {
         this.currentDirection = currentDirection;

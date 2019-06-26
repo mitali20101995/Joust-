@@ -14,7 +14,7 @@ public class Player {
     private int xPosition;
     private int yPosition;
     private Rect hitBox;
-    Bitmap playerImage;
+    public Bitmap playerImage;
 
     enum Direction {
         NONE,
