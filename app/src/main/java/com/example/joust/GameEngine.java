@@ -70,6 +70,7 @@ public class GameEngine extends SurfaceView implements Runnable {
         SWIPE_RIGHT,
         SWIPE_LEFT
     }
+    Enemy.Direction enemyDirection;
 
     public GameEngine(Context context, int w, int h) {
         super(context);
@@ -128,6 +129,7 @@ public class GameEngine extends SurfaceView implements Runnable {
         // This is optional. Use it to:
         //  - setup or configure your sprites
         //  - set the initial position of your sprites
+        enemyDirection = Enemy.Direction.RIGHT;
 
 
         // @TODO: Any other game setup stuff goes here
@@ -223,6 +225,15 @@ public class GameEngine extends SurfaceView implements Runnable {
             default:
                 break;
         }
+
+        if(enemy.getXPosition() <= LEFT_RELOCATION_MAX){
+            enemyDirection = Enemy.Direction.RIGHT;
+        }
+        else if(enemy.getXPosition() >= RIGHT_RELOCATION_MAX){
+            enemyDirection = Enemy.Direction.LEFT;
+
+        }
+        enemy.updatePosition(enemyDirection, RELOCATE_RIGHT_LEFT);
         // @TODO: Collision detection code
 
     }
@@ -259,6 +270,13 @@ public class GameEngine extends SurfaceView implements Runnable {
                     playerHitbox.bottom,
                     paintbrush);
 
+            Rect enemyHitbox = enemy.getHitBox();
+            canvas.drawRect( enemyHitbox.left,
+                    enemyHitbox.top,
+                    enemyHitbox.right,
+                    enemyHitbox.bottom,
+                    paintbrush);
+
             //@TODO: Draw the enemy
             canvas.drawBitmap(this.enemy.getBitmap(), this.enemy.getXPosition(), this.enemy.getYPosition(), paintbrush);
 
@@ -275,7 +293,7 @@ public class GameEngine extends SurfaceView implements Runnable {
     // Sets the frame rate of the game
     public void setFPS() {
         try {
-            Thread.sleep(50);
+            Thread.sleep(1000);
         }
         catch (Exception e) {
 

@@ -3,18 +3,33 @@ package com.example.joust;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
+
 
 public class Enemy
 {
-    int xPosition;
-    int yPosition;
-    int direction;
-    Bitmap image;
+    private int xPosition;
+    private int yPosition;
+    private Bitmap image;
+    private Rect hitBox;
+
+    enum Direction {
+        NONE,
+        RIGHT,
+        LEFT
+    }
 
     public Enemy(Context context, int x, int y) {
         this.image = BitmapFactory.decodeResource(context.getResources(), R.drawable.snake_crawl_01);
         this.xPosition = x;
         this.yPosition = y;
+
+        this.hitBox = new Rect(
+                this.xPosition,
+                this.yPosition,
+                this.xPosition + this.image.getWidth(),
+                this.yPosition + this.image.getHeight()
+        );
     }
 
     public void setXPosition(int x) {
@@ -33,6 +48,26 @@ public class Enemy
 
     public Bitmap getBitmap() {
         return this.image;
+    }
+
+    public Rect getHitBox() { return this.hitBox; }
+
+    public void updatePosition(Direction direction, int steps) {
+        int newPositionX = this.xPosition;
+        switch (direction){
+            case RIGHT:
+                newPositionX = newPositionX + steps;
+                this.setXPosition(newPositionX);
+                break;
+            case LEFT:
+                newPositionX = newPositionX - steps;
+                this.setXPosition(newPositionX);
+                break;
+            default:
+                break;
+        }
+        this.hitBox.left = this.xPosition;
+        this.hitBox.right = this.xPosition + this.image.getWidth();
     }
 
 }
